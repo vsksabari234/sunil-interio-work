@@ -1,0 +1,6 @@
+{
+  "name": "Sunil Woodworks – Crafting Wood. Creating Spaces.",
+  "description": "Bespoke carpentry, custom furniture, modular wardrobes, and interior woodwork craftsmanship.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

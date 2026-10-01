@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --color-wood-primary: #D4A373;
+  --color-wood-dark: #0D0704;
+  --color-wood-warm: #8A532B;
+  --color-wood-amber: #B87333;
+  --color-wood-gold: #C59B27;
+  --color-wood-canvas: #140C07;
+  --color-wood-surface: #1F130B;
+  --color-wood-border: #3E291C;
+  --color-wood-text: #FAF7F2;
+  --color-wood-muted: #B8A898;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF7F2;
+  color: #1C110B;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .font-serif-wood {
+  font-family: var(--font-serif);
+}
+
+/* Custom smooth scrollbar in warm walnut brown */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF7F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4A373;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8A532B;
+}
+
+/* Clean, Simple Logo Fly Away Animation */
+@keyframes logoFlyAway {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-3px, 2px) scale(0.95) rotate(-10deg);
+  }
+  45% {
+    transform: translate(14px, -14px) scale(1.15) rotate(15deg);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(36px, -36px) scale(0.8) rotate(25deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(52px, -52px) scale(0.3) rotate(35deg);
+    opacity: 0;
+  }
+}
+
+.animate-flyAway {
+  animation: logoFlyAway 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
