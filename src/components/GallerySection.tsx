@@ -2,51 +2,42 @@ import React, { useState, useMemo } from 'react';
 import { ProjectItem, galleryCategories, GalleryCategoryId } from '../data/galleryData';
 import { getCategorizedProjects } from '../data/galleryData';
 import { Lightbox } from './Lightbox';
-import { Search, ArrowUpDown, MapPin, Eye, Camera, CheckCircle2, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Sparkles, FileText } from 'lucide-react';
 import { useProjectPhotos } from '../hooks/useProjectPhotos';
 import { CarpentryBlueprintPlaceholder } from './CarpentryBlueprintPlaceholder';
 
 interface GallerySectionProps {
   onOpenUpload?: (category?: string, id?: string) => void;
+  onOpenLookbook?: () => void;
+  onNavigateToGallery?: () => void;
 }
 
-export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) => {
+export const GallerySection: React.FC<GallerySectionProps> = ({ 
+  onOpenUpload, 
+  onOpenLookbook,
+  onNavigateToGallery 
+}) => {
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategoryId>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'popularity' | 'newest'>('popularity');
-  const [filterPhotosOnly, setFilterPhotosOnly] = useState<boolean>(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(12);
   const { getPhotoFor } = useProjectPhotos();
 
-  // Filter projects based on active category, search, and photo filter
+  // Count items per category for clean count badges
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: getCategorizedProjects('all').length };
+    galleryCategories.forEach((cat) => {
+      if (cat.id !== 'all') {
+        counts[cat.id] = getCategorizedProjects(cat.id).length;
+      }
+    });
+    return counts;
+  }, []);
+
+  // Filter projects based on active category
   const filteredProjects = useMemo(() => {
-    let list = getCategorizedProjects(selectedCategory);
-
-    // Apply text search filtering
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (p: ProjectItem) =>
-          p.title.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          p.woodSpecies.toLowerCase().includes(q) ||
-          p.location.toLowerCase().includes(q) ||
-          p.finish.toLowerCase().includes(q)
-      );
-    }
-
-    // Filter to only show projects with live photos if requested
-    if (filterPhotosOnly) {
-      list = list.filter((p: ProjectItem) => Boolean(getPhotoFor(p.id, p.category)));
-    }
-
-    // Sort by criteria
-    if (sortBy === 'newest') {
-      return [...list].sort((a, b) => b.date.localeCompare(a.date));
-    }
-    return [...list].sort((a, b) => b.popularity - a.popularity);
-  }, [selectedCategory, searchQuery, sortBy, filterPhotosOnly, getPhotoFor]);
+    const list = getCategorizedProjects(selectedCategory);
+    return [...list].sort((a: ProjectItem, b: ProjectItem) => b.popularity - a.popularity);
+  }, [selectedCategory]);
 
   const displayedProjects = useMemo(() => {
     return filteredProjects.slice(0, visibleCount);
@@ -62,10 +53,6 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
     setVisibleCount(12);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value as any);
-  };
-
   const handleNext = () => {
     setLightboxIndex((prev) =>
       prev! === displayedProjects.length - 1 ? 0 : prev! + 1
@@ -79,7 +66,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
   };
 
   return (
-    <section id="gallery" className="py-12 sm:py-16 bg-white text-[#1C110B] border-b border-[#E8DECE] relative">
+    <section id="gallery" className="scroll-mt-24 pt-16 sm:pt-20 pb-12 sm:pb-16 bg-white text-[#1C110B] border-b border-[#E8DECE] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -102,159 +89,84 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
               <span className="w-2 h-2 rounded-full bg-[#8A532B]" />
               <span>90+ Documented Projects</span>
             </div>
+
+            {onNavigateToGallery && (
+              <button
+                type="button"
+                onClick={onNavigateToGallery}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold text-white bg-[#8A532B] hover:bg-[#724422] shadow-sm hover:shadow-md transition-all cursor-pointer"
+                title="Open dedicated Gallery Page with all 156 authentic photos"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
+                <span>View All 156 Photos Page →</span>
+              </button>
+            )}
+
+            {onOpenLookbook && (
+              <button
+                type="button"
+                onClick={onOpenLookbook}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold text-[#8A532B] bg-[#FAF7F2] hover:bg-[#F3ECE4] border border-[#D4A373] shadow-2xs transition-colors cursor-pointer"
+                title="View & Download Sunil Woodworks Portfolio Catalog"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#8A532B]" />
+                <span>Download Project Catalog (PDF)</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filter & Control Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-xl border border-[#E8DECE] mb-8 space-y-4 shadow-xs">
-          
-          {/* Top Row: Search Input + Sort Dropdown + Photos Filter Toggle */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Search Box */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6258]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setVisibleCount(12);
-                }}
-                placeholder="Search by wood type, project, or location (e.g., Teak, Wardrobe, Kitchen, Jayanagar)..."
-                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-[#FAF7F2] border border-[#E8DECE] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A532B] text-[#1C110B] placeholder:text-[#9C8F80]"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B6258] hover:text-[#1C110B] cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Filter Toggle: Show Photographed Works */}
-            <button
-              type="button"
-              onClick={() => {
-                setFilterPhotosOnly((prev) => !prev);
-                setVisibleCount(12);
-              }}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer whitespace-nowrap ${
-                filterPhotosOnly
-                  ? 'bg-[#2E1A11] text-white border-[#2E1A11]'
-                  : 'bg-[#FAF7F2] text-[#4A423B] border-[#E8DECE] hover:bg-[#F5EFEB]'
-              }`}
-            >
-              <CheckCircle2 className={`w-3.5 h-3.5 ${filterPhotosOnly ? 'text-[#C59B27]' : 'text-[#8A532B]'}`} />
-              <span>Photographed Projects</span>
-            </button>
-
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-2 shrink-0">
-              <label htmlFor="gallery-sort" className="text-xs font-semibold text-[#4A423B] flex items-center gap-1.5 whitespace-nowrap">
-                <ArrowUpDown className="w-3.5 h-3.5 text-[#8A532B]" />
-                <span>Sort:</span>
-              </label>
-              <select
-                id="gallery-sort"
-                value={sortBy}
-                onChange={handleSortChange}
-                className="px-3 py-2.5 text-xs sm:text-sm font-medium bg-[#FAF7F2] border border-[#E8DECE] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A532B] text-[#1C110B] cursor-pointer"
-              >
-                <option value="popularity">Popularity / Featured</option>
-                <option value="newest">Recent Projects</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Quick-Search Suggestions */}
-          <div className="flex items-center gap-2 overflow-x-auto text-[11px] text-[#554C43] pt-1 pb-1 no-scrollbar">
-            <span className="font-semibold text-[#1C110B] shrink-0">Quick Filter:</span>
-            {['Teak Wood', 'Wardrobe', 'Modular Kitchen', 'TV Unit', 'Pooja', 'Bed Frame', 'False Ceiling', 'Room Partition'].map((kw) => (
-              <button
-                key={kw}
-                type="button"
-                onClick={() => {
-                  setSearchQuery(kw);
-                  setVisibleCount(12);
-                }}
-                className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors shrink-0 cursor-pointer ${
-                  searchQuery.toLowerCase() === kw.toLowerCase()
-                    ? 'bg-[#2E1A11] text-white border-[#2E1A11]'
-                    : 'bg-[#FAF7F2] text-[#4A423B] border-[#E8DECE] hover:bg-[#F5EFEB] hover:text-[#1C110B]'
-                }`}
-              >
-                {kw}
-              </button>
-            ))}
-          </div>
-
-          {/* Bottom Row: Category Buttons */}
-          <div className="pt-3 border-t border-[#E8DECE] flex items-center gap-2 overflow-x-auto no-scrollbar pb-1" role="tablist">
+        {/* Category Tabs Filter - Redesigned Artisanal Segmented Dock */}
+        <div className="flex justify-center mb-10">
+          <div
+            className="inline-flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#E8DECE] rounded-2xl shadow-2xs max-w-4xl"
+            role="tablist"
+            aria-label="Filter portfolio by category"
+          >
             {galleryCategories.map((cat) => {
               const isSelected = selectedCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
               return (
                 <button
                   key={cat.id}
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap transition-all cursor-pointer border ${
+                  className={`group relative inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm rounded-xl transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? 'bg-[#2E1A11] text-white border-[#2E1A11] shadow-xs font-semibold'
-                      : 'bg-[#FAF7F2] text-[#4A423B] hover:bg-[#F5EFEB] hover:text-[#1C110B] border-[#E8DECE]'
+                      ? 'bg-[#2E1A11] text-white font-semibold shadow-xs'
+                      : 'text-[#554C43] hover:text-[#1C110B] hover:bg-white/90 font-medium'
                   }`}
                 >
-                  {cat.label}
+                  {isSelected && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A373] shrink-0" />
+                  )}
+                  <span>{cat.label}</span>
+                  <span
+                    className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full transition-colors ${
+                      isSelected
+                        ? 'bg-white/15 text-[#D4A373]'
+                        : 'bg-[#E8DECE]/70 text-[#6B6258] group-hover:bg-[#E8DECE] group-hover:text-[#1C110B]'
+                    }`}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
           </div>
-
-          {/* Results Summary Count */}
-          <div className="flex items-center justify-between text-xs text-[#6B6258] pt-1">
-            <span>
-              Showing <strong className="text-[#1C110B] font-mono tabular-nums">{displayedProjects.length}</strong> of{' '}
-              <strong className="text-[#1C110B] font-mono tabular-nums">{filteredProjects.length}</strong> projects
-              {searchQuery && ` matching "${searchQuery}"`}
-              {filterPhotosOnly && ' (Photos Only)'}
-            </span>
-            {(selectedCategory !== 'all' || searchQuery || filterPhotosOnly) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                  setFilterPhotosOnly(false);
-                }}
-                className="text-[#8A532B] hover:text-[#2E1A11] font-semibold underline underline-offset-2 cursor-pointer"
-              >
-                Reset all filters
-              </button>
-            )}
-          </div>
-
         </div>
 
         {/* Gallery Grid */}
         {displayedProjects.length === 0 ? (
           <div className="text-center py-16 px-4 bg-white rounded-xl border border-[#E8DECE]">
-            <p className="font-serif-wood text-xl text-[#1C110B] font-bold mb-2">No projects matched your criteria</p>
-            <p className="text-sm text-[#554C43] mb-5">
-              Try adjusting your search terms or unchecking the "Photographed Projects" filter.
-            </p>
+            <p className="font-serif-wood text-xl text-[#1C110B] font-bold mb-2">No projects found in this category</p>
             <button
               type="button"
-              onClick={() => {
-                setSelectedCategory('all');
-                setSearchQuery('');
-                setFilterPhotosOnly(false);
-              }}
-              className="px-4 py-2 text-xs font-bold text-white bg-[#2E1A11] rounded-lg hover:bg-[#432719] cursor-pointer"
+              onClick={() => setSelectedCategory('all')}
+              className="px-4 py-2 text-xs font-bold text-white bg-[#2E1A11] rounded-lg hover:bg-[#432719] cursor-pointer mt-3"
             >
-              Reset Filters
+              View All Projects
             </button>
           </div>
         ) : (
@@ -268,36 +180,15 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
                   onClick={() => setLightboxIndex(index)}
                   className="group bg-white rounded-xl border border-[#E8DECE] overflow-hidden shadow-2xs hover:border-[#8A532B]/50 hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-0.5"
                 >
-                  {/* Image Container */}
+                  {/* Image Container - Clean Pure Photo */}
                   <div className="relative aspect-4/3 overflow-hidden bg-[#2E1A11]">
                     {photoUrl ? (
-                      <div className="relative w-full h-full">
-                        <img
-                          src={photoUrl}
-                          alt={project.title}
-                          className="w-full h-full object-cover object-center group-hover:scale-104 transition-transform duration-500 ease-out"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                        
-                        {/* Live Site Photo Badge */}
-                        <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-[10px] font-semibold text-[#D4A373] border border-white/20">
-                          Site Photo
-                        </div>
-
-                        <div className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-black/40 group-hover:bg-[#2E1A11] text-white backdrop-blur-xs transition-colors">
-                          <Eye className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#D4A373] drop-shadow-xs">
-                            {project.categoryLabel}
-                          </span>
-                          <p className="text-xs text-white/95 truncate flex items-center gap-1 drop-shadow-xs">
-                            <MapPin className="w-3 h-3 shrink-0 text-[#C59B27]" />
-                            <span>{project.location}</span>
-                          </p>
-                        </div>
-                      </div>
+                      <img
+                        src={photoUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+                        loading="lazy"
+                      />
                     ) : (
                       <CarpentryBlueprintPlaceholder
                         category={project.category}
@@ -307,38 +198,15 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
                       />
                     )}
                   </div>
-
-                  {/* Card Body */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-serif-wood text-lg font-bold text-[#1C110B] leading-snug mb-1 group-hover:text-[#8A532B] transition-colors line-clamp-2">
-                        {project.title}
-                      </h3>
-                      <p className="text-xs text-[#554C43] line-clamp-2 mb-3">
-                        {project.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-[#E8DECE] text-[11px] text-[#6B6258] space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-[#1C110B]">Wood / Material:</span>
-                        <span className="truncate max-w-[150px] text-right font-medium">{project.woodSpecies}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-[#1C110B]">Finish:</span>
-                        <span className="truncate max-w-[150px] text-right">{project.finish}</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Load More Button */}
-        {displayedProjects.length < filteredProjects.length && (
-          <div className="mt-12 text-center">
+        {/* Load More Button & Catalog Action */}
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          {displayedProjects.length < filteredProjects.length && (
             <button
               type="button"
               onClick={() => setVisibleCount((prev) => Math.min(prev + 12, filteredProjects.length))}
@@ -346,8 +214,30 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ onOpenUpload }) 
             >
               <span>Load More Projects ({filteredProjects.length - displayedProjects.length} remaining)</span>
             </button>
-          </div>
-        )}
+          )}
+
+          {onNavigateToGallery && (
+            <button
+              type="button"
+              onClick={onNavigateToGallery}
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg text-xs sm:text-sm font-bold text-white bg-[#2E1A11] hover:bg-[#432719] shadow-sm hover:shadow-md transition-all cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-[#D4A373]" />
+              <span>Browse All 156 Photos Page</span>
+            </button>
+          )}
+
+          {onOpenLookbook && (
+            <button
+              type="button"
+              onClick={onOpenLookbook}
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg text-xs sm:text-sm font-bold text-[#1C110B] bg-white hover:bg-[#FAF7F2] border border-[#D4A373] shadow-2xs transition-all cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-[#8A532B]" />
+              <span>Download Full Project Catalog (PDF)</span>
+            </button>
+          )}
+        </div>
 
       </div>
 

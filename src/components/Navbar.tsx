@@ -7,10 +7,21 @@ interface NavbarProps {
   onOpenLookbook?: () => void;
   onOpenFeedback?: () => void;
   onOpenUpload?: () => void;
+  onNavigateToGallery?: () => void;
+  onNavigateToHome?: (sectionId?: string) => void;
+  currentPage?: 'home' | 'gallery';
   activeSection?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote, onOpenLookbook, onOpenFeedback, activeSection = 'home' }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  onOpenQuote, 
+  onOpenLookbook, 
+  onOpenFeedback, 
+  onNavigateToGallery,
+  onNavigateToHome,
+  currentPage = 'home',
+  activeSection = 'home' 
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -22,21 +33,55 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote, onOpenLookbook, onO
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Prevent background scrolling and enable smooth scrolling inside mobile drawer
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
   const navLinks = [
-    { label: 'Home', href: '#home' },
+    { label: 'Home', href: '#home', isHome: true },
     { label: 'Services', href: '#services' },
-    { label: 'Our Work', href: '#gallery' },
+    { label: 'Gallery', href: '#gallery-page', isGallery: true, badge: '156' },
     { label: 'Process', href: '#process' },
     { label: 'About', href: '#about' },
     { label: 'Contact', href: '#contact' },
   ];
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, isGallery?: boolean) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+
+    if (isGallery || href === '#gallery-page' || href === '#all-photos') {
+      if (onNavigateToGallery) {
+        onNavigateToGallery();
+        return;
+      }
+    }
+
+    if (currentPage === 'gallery') {
+      const sectionId = href.replace('#', '');
+      if (onNavigateToHome) {
+        onNavigateToHome(sectionId);
+        return;
+      }
+    }
+
     const targetElement = document.querySelector(href);
     if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = 90;
+      const elementPosition = targetElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -56,38 +101,38 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote, onOpenLookbook, onO
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, '#home')}
-              className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A532B] rounded-lg"
+              className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A532B] rounded-lg py-0.5"
               aria-label="Sunil Interior Work - Home"
             >
               <img
-                src="/sunil-logo.jpg"
-                alt="Sunil Interior Work Logo"
-                className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg object-contain border border-[#E8DECE] shadow-2xs group-hover:scale-105 transition-transform bg-[#FAF7F2]"
+                src="/sunil-logo-transparent.png"
+                alt="Sunil Interior Work - Woodcraft Logo"
+                className="h-11 sm:h-13 w-auto max-w-[170px] sm:max-w-[200px] object-contain group-hover:scale-105 transition-transform drop-shadow-xs"
               />
-              <div className="flex flex-col">
-                <span className="font-serif-wood text-xl sm:text-2xl font-bold tracking-tight text-[#1C110B] group-hover:text-[#8A532B] transition-colors leading-none">
-                  Sunil Interior Work
-                </span>
-                <span className="hidden sm:block text-[9px] tracking-wider text-[#8A532B] uppercase font-semibold mt-1">
-                  Crafting Wood · Creating Spaces
-                </span>
-              </div>
             </a>
 
             {/* Zone 2: Clean text navigation links */}
             <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-medium" aria-label="Main Navigation">
               {navLinks.map((link) => {
-                const isActive = activeSection === link.href.replace('#', '');
+                const isActive = (currentPage === 'gallery' && link.isGallery) || 
+                  (currentPage === 'home' && activeSection === link.href.replace('#', ''));
                 return (
                   <a
                     key={link.label}
                     href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`relative py-1 text-xs lg:text-sm tracking-wide transition-colors hover:text-[#8A532B] ${
+                    onClick={(e) => handleNavClick(e, link.href, link.isGallery)}
+                    className={`relative py-1 text-xs lg:text-sm tracking-wide transition-colors hover:text-[#8A532B] flex items-center gap-1.5 ${
                       isActive ? 'text-[#8A532B] font-semibold' : 'text-[#554C43]'
-                    }`}
+                    } ${link.isGallery ? 'font-bold text-[#8A532B]' : ''}`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.badge && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-semibold ${
+                        isActive ? 'bg-[#8A532B] text-white' : 'bg-[#E8DECE]/80 text-[#8A532B]'
+                      }`}>
+                        {link.badge}
+                      </span>
+                    )}
                     {isActive && (
                       <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#8A532B] rounded-full" />
                     )}
@@ -145,100 +190,107 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote, onOpenLookbook, onO
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs md:hidden animate-fadeIn"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm bg-[#FAF7F2] p-6 shadow-2xl flex flex-col justify-between border-l border-[#E8DECE]"
+            className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-[#FAF7F2] shadow-2xl flex flex-col border-l border-[#E8DECE] overflow-y-auto overscroll-contain z-50"
             onClick={(e) => e.stopPropagation()}
           >
-            <div>
-              <div className="flex items-center justify-between pb-6 border-b border-[#E8DECE]">
-                <div>
-                  <span className="font-serif-wood text-xl font-bold text-[#1C110B]">Sunil Woodworks</span>
-                  <p className="text-[11px] text-[#8A532B] font-medium tracking-wide">Custom Carpentry Services</p>
+            <div className="p-5 sm:p-6 flex flex-col min-h-full justify-between pb-32">
+              <div>
+                <div className="flex items-center justify-between pb-5 border-b border-[#E8DECE]">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src="/sunil-logo-transparent.png"
+                      alt="Sunil Woodworks"
+                      className="h-8 w-auto object-contain"
+                    />
+                    <div>
+                      <span className="font-serif-wood text-base font-bold text-[#1C110B] block leading-tight">Sunil Woodworks</span>
+                      <p className="text-[10px] text-[#8A532B] font-medium tracking-wide">Custom Carpentry Services</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 rounded-lg text-[#4A423B] hover:bg-[#E8DECE]/60 transition-colors cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-md text-[#4A423B] hover:bg-[#E8DECE]/40"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+
+                <nav className="flex flex-col py-4 gap-1">
+                  {navLinks.map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href, link.isGallery)}
+                      className={`flex items-center justify-between px-3 py-3 rounded-lg text-sm sm:text-base font-medium transition-colors ${
+                        link.isGallery 
+                          ? 'bg-[#8A532B]/10 text-[#8A532B] font-bold border border-[#8A532B]/30' 
+                          : 'text-[#2E1A11] hover:bg-white hover:text-[#8A532B]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{link.label}</span>
+                        {link.badge && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-[#8A532B] text-white">
+                            {link.badge} Photos
+                          </span>
+                        )}
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-[#8A532B]" />
+                    </a>
+                  ))}
+                </nav>
               </div>
 
-              <nav className="flex flex-col py-6 gap-1">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className="flex items-center justify-between px-3 py-3 rounded-lg text-base font-medium text-[#2E1A11] hover:bg-white hover:text-[#8A532B] transition-colors"
+              <div className="pt-5 border-t border-[#E8DECE] space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenQuote();
+                  }}
+                  className="w-full py-3 text-center text-sm font-bold text-white bg-[#2E1A11] hover:bg-[#432719] active:bg-[#1a0e09] rounded-lg transition-colors cursor-pointer shadow-sm"
+                >
+                  Get a Free Quote
+                </button>
+
+                {onOpenFeedback && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenFeedback();
+                    }}
+                    className="w-full py-2.5 text-center text-xs font-semibold text-[#8A532B] bg-white border border-[#D4A373] rounded-lg hover:bg-[#FAF7F2] transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                   >
-                    <span>{link.label}</span>
-                    <ArrowRight className="w-4 h-4 text-[#8A532B]" />
+                    <MessageSquarePlus className="w-3.5 h-3.5 text-[#8A532B]" />
+                    <span>Give Feedback</span>
+                  </button>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <a
+                    href={getPhoneUrl()}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#E8DECE] rounded-lg text-xs font-semibold text-[#1C110B] bg-white hover:bg-[#F5EFEB] transition-colors shadow-2xs"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#8A532B]" />
+                    <span>Call Now</span>
                   </a>
-                ))}
-              </nav>
-            </div>
-
-            <div className="pt-6 border-t border-[#E8DECE] space-y-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenQuote();
-                }}
-                className="w-full py-3 text-center text-sm font-bold text-white bg-[#2E1A11] hover:bg-[#432719] rounded-lg transition-colors cursor-pointer shadow-sm"
-              >
-                Get a Free Quote
-              </button>
-
-              {onOpenFeedback && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenFeedback();
-                  }}
-                  className="w-full py-2.5 text-center text-xs font-semibold text-[#8A532B] bg-white border border-[#D4A373] rounded-lg hover:bg-[#FAF7F2] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <MessageSquarePlus className="w-3.5 h-3.5 text-[#8A532B]" />
-                  <span>Give Feedback</span>
-                </button>
-              )}
-
-              {onOpenLookbook && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenLookbook();
-                  }}
-                  className="w-full py-2.5 text-center text-xs font-semibold text-[#8A532B] bg-white border border-[#E8DECE] rounded-lg hover:bg-[#F5EFEB] transition-colors cursor-pointer"
-                >
-                  Download Project Catalog (PDF)
-                </button>
-              )}
-
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href={getPhoneUrl()}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#E8DECE] rounded-lg text-xs font-semibold text-[#1C110B] bg-white hover:bg-[#F5EFEB] transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#8A532B]" />
-                  <span>Call Now</span>
-                </a>
-                <a
-                  href={getWhatsAppUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] transition-colors"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
-                </a>
+                  <a
+                    href={getWhatsAppUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] transition-colors shadow-2xs"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>

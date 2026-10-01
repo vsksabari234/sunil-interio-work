@@ -23,18 +23,10 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="/sunil-logo.jpg"
+                src="/sunil-logo-transparent.png"
                 alt="Sunil Interior Work Logo"
-                className="w-12 h-12 rounded-lg object-contain bg-[#FAF7F2] p-1 border border-white/10"
+                className="h-20 w-auto object-contain filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
               />
-              <div>
-                <span className="font-serif-wood text-2xl font-bold tracking-tight text-white block leading-tight">
-                  Sunil Interior Work
-                </span>
-                <span className="text-[10px] tracking-wider text-[#D4A373] uppercase block font-semibold">
-                  Crafting Wood · Creating Spaces
-                </span>
-              </div>
             </div>
             <p className="text-xs text-[#FAF7F2]/70 leading-relaxed max-w-sm">
               Local carpentry and custom woodwork business in Bengaluru specializing in bespoke furniture, modular wardrobes, custom kitchens, doors, TV units, and on-site interior woodwork.

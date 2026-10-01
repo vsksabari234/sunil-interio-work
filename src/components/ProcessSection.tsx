@@ -95,7 +95,7 @@ export const ProcessSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-white text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden">
+    <section id="process" className="scroll-mt-24 py-16 sm:py-24 bg-white text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}

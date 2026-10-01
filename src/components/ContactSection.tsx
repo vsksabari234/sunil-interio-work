@@ -11,7 +11,6 @@ import {
   MessageCircle,
   Mail,
   MapPin,
-  Clock,
   Send,
   CheckCircle2,
   ExternalLink,
@@ -111,7 +110,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
   };
 
   return (
-    <section id="contact" className="py-16 sm:py-24 bg-[#FAF7F2] text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden">
+    <section id="contact" className="scroll-mt-24 py-16 sm:py-24 bg-[#FAF7F2] text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
@@ -194,22 +193,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
                   <address className="not-italic text-xs sm:text-sm text-[#1C110B] font-medium leading-relaxed">
                     {businessInfo.address.full}
                   </address>
-                </div>
-              </div>
-
-              {/* Working Hours */}
-              <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-lg bg-[#FAF7F2] border border-[#E8DECE] flex items-center justify-center text-[#8A532B] shrink-0">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-xs font-semibold text-[#8A532B] uppercase tracking-wider block">Working Hours</span>
-                  <p className="text-xs text-[#1C110B] font-medium">
-                    {businessInfo.workingHours.weekdays}
-                  </p>
-                  <p className="text-xs text-[#6B6258]">
-                    {businessInfo.workingHours.sunday}
-                  </p>
                 </div>
               </div>
 

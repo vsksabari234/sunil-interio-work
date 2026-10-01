@@ -9,10 +9,10 @@ interface AboutSectionProps {
 
 export const AboutSection: React.FC<AboutSectionProps> = () => {
   const { getPhotoFor } = useProjectPhotos();
-  const workshopPhoto = '/assets/gallery/pooja-units/pooja-units-02.jpg';
+  const aboutPhoto = getPhotoFor('proj-59', 'tv-units') || '/assets/gallery/tv-units/tv-units-01.jpg';
 
   return (
-    <section id="about" className="py-16 sm:py-24 bg-white text-[#1C110B] border-b border-[#E8DECE]">
+    <section id="about" className="scroll-mt-24 py-16 sm:py-24 bg-white text-[#1C110B] border-b border-[#E8DECE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -37,18 +37,18 @@ export const AboutSection: React.FC<AboutSectionProps> = () => {
             <div className="relative rounded-2xl overflow-hidden border border-[#E8DECE] bg-[#FAF7F2] shadow-md group">
               <div className="aspect-4/3 overflow-hidden bg-[#2E1A11] flex items-center justify-center">
                 <img
-                  src={workshopPhoto}
-                  alt="Sunil Woodworks workshop joinery in Bengaluru"
+                  src={aboutPhoto}
+                  alt="Backlit Marble & Fluted Teak Wall TV Entertainment Console by Sunil Woodworks"
                   className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700 ease-out"
                   loading="lazy"
                 />
               </div>
               <div className="p-4 bg-white border-t border-[#E8DECE]">
                 <p className="text-xs font-semibold text-[#1C110B]">
-                  Accurate Measurements & Solid Joinery
+                  Precision Joinery & Custom Fitted Woodwork
                 </p>
                 <p className="text-[11px] text-[#6B6258] mt-0.5">
-                  Crafted and pre-assembled by our carpentry team in our RT Nagar, Bangalore workshop.
+                  Crafted and pre-assembled by master carpenter Sunil's team in RT Nagar, Bangalore.
                 </p>
               </div>
             </div>

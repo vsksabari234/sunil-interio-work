@@ -1,6 +1,6 @@
 import React from 'react';
 import { servicesData, ServiceItem } from '../data/servicesData';
-import { ArrowRight, MessageSquare, Camera, Hammer } from 'lucide-react';
+import { ArrowRight, MessageSquare, Camera, Hammer, Sparkles } from 'lucide-react';
 import { getWhatsAppUrl } from '../config/businessInfo';
 import { useProjectPhotos } from '../hooks/useProjectPhotos';
 
@@ -8,18 +8,20 @@ interface ServicesSectionProps {
   onEnquire: (serviceTitle: string) => void;
   previewOnly?: boolean;
   onOpenUpload?: (category?: string, id?: string) => void;
+  onNavigateToGallery?: () => void;
 }
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({
   onEnquire,
   onOpenUpload,
+  onNavigateToGallery,
 }) => {
   const { getPhotoFor } = useProjectPhotos();
 
   return (
     <section
       id="services"
-      className="py-16 sm:py-20 lg:py-24 bg-[#FAF7F2] text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden"
+      className="scroll-mt-24 py-16 sm:py-20 lg:py-24 bg-[#FAF7F2] text-[#1C110B] border-b border-[#E8DECE] relative overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -45,14 +47,25 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               <span className="w-2 h-2 rounded-full bg-[#8A532B]" />
               <span><strong className="text-[#8A532B] font-bold">6 Core</strong> Woodwork Solutions</span>
             </div>
+
+            {onNavigateToGallery && (
+              <button
+                type="button"
+                onClick={onNavigateToGallery}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white bg-[#8A532B] hover:bg-[#724422] shadow-sm hover:shadow-md transition-all cursor-pointer"
+                title="Open dedicated Gallery Page with all 156 authentic photos"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
+                <span>View All 156 Photos Page →</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Clean Responsive 3-Column × 2-Row Grid (Desktop: 3 cols, Tablet: 2 cols, Mobile: 1 col) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 lg:gap-8 items-stretch">
-          {servicesData.map((service: ServiceItem, index: number) => {
+          {servicesData.map((service: ServiceItem) => {
             const photoUrl = getPhotoFor(service.id, service.category) || service.image;
-            const indexNumber = String(index + 1).padStart(2, '0');
 
             return (
               <div
@@ -68,11 +81,6 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-
-                  {/* Editorial Index Number Tag */}
-                  <div className="absolute top-3.5 left-3.5 px-2.5 py-1 rounded bg-[#2E1A11]/85 backdrop-blur-xs text-white text-[11px] font-mono tracking-widest font-semibold border border-white/20">
-                    {indexNumber}
-                  </div>
                 </div>
 
                 {/* Card Content & Action */}
@@ -82,21 +90,9 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                       {service.title}
                     </h3>
 
-                    <p className="text-xs sm:text-sm text-[#554C43] leading-relaxed mb-4">
+                    <p className="text-xs sm:text-sm text-[#554C43] leading-relaxed">
                       {service.description}
                     </p>
-
-                    {/* Architectural Specifications Pill-Free Specs */}
-                    <div className="pt-3 border-t border-[#E8DECE]/80 text-[11px] text-[#6B6258] space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8A532B] font-semibold">Core:</span>
-                        <span className="font-mono">IS:710 Marine Ply / Solid Teak</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8A532B] font-semibold">Hardware:</span>
-                        <span className="font-mono">Blum / Hettich Soft-Close</span>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Actions Bar: Enquire Now / Get a Quote & WhatsApp */}
@@ -126,6 +122,25 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             );
           })}
         </div>
+
+        {/* Full Gallery Action Banner below Services */}
+        {onNavigateToGallery && (
+          <div className="mt-12 sm:mt-16 text-center">
+            <div className="inline-flex flex-col sm:flex-row items-center gap-3.5 p-3.5 sm:p-5 bg-white border border-[#E8DECE] rounded-2xl shadow-xs">
+              <span className="text-xs sm:text-sm text-[#554C43] font-medium px-2">
+                Want to see finished installations of all these custom woodwork services?
+              </span>
+              <button
+                type="button"
+                onClick={onNavigateToGallery}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#8A532B] hover:bg-[#724422] shadow-sm hover:shadow-md transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-[#D4A373]" />
+                <span>View All 156 Photos Page →</span>
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </section>
